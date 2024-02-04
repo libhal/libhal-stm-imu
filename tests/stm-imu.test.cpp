@@ -12,7 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "libhal-__device__/__device__.hpp"
+#include <libhal-stm-imu/stm-imu.hpp>
 
-namespace hal::__device__ {  // NOLINT
-}  // namespace hal::__device__
+#include <boost/ut.hpp>
+
+namespace hal::stm-imu {
+void stm-imu_test()
+{
+  using namespace boost::ut;
+  using namespace std::literals;
+
+  "stm-imu::create()"_test = []() {
+    // Setup
+    // Exercise
+    // Verify
+  };
+};
+}  // namespace hal::stm-imu

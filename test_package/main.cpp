@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-__device__/__device__.hpp>
+#include <libhal-stm-imu/stm-imu.hpp>
 #include <libhal/error.hpp>
 
 int main()
 {
-  hal::__device__::__device___replace_me bar;
+  hal::stm-imu::stm-imu_replace_me bar;
 }
 
 namespace boost {

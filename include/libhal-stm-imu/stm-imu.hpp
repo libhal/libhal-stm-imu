@@ -14,7 +14,7 @@
 
 #pragma once
 
-namespace hal::__device__ {  // NOLINT
-class __device___replace_me  // NOLINT
+namespace hal::stm-imu {
+class stm-imu_replace_me
 {};
-}  // namespace hal::__device__
+}  // namespace hal::stm-imu

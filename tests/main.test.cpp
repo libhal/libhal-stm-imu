@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace hal::__device__ {     // NOLINT
-extern void __device___test();  // NOLINT
-}  // namespace hal::__device__
+namespace hal::stm-imu {
+extern void stm-imu_test();
+}  // namespace hal::stm-imu
 
 int main()
 {
-  hal::__device__::__device___test();
+  hal::stm-imu::stm-imu_test();
 }
