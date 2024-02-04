@@ -22,14 +22,14 @@ import os
 required_conan_version = ">=2.0.6"
 
 
-class libhal___device___conan(ConanFile):
-    name = "libhal-__device__"
+class libhal_stm-imu_conan(ConanFile):
+    name = "libhal-stm-imu"
     version = "0.0.1"
     license = "Apache-2.0"
     url = "https://github.com/conan-io/conan-center-index"
-    homepage = "https://github.com/libhal/libhal-__device__"
-    description = ("A collection of drivers for the __device__")
-    topics = ("__device__", "libhal", "driver")
+    homepage = "https://github.com/libhal/libhal-stm-imu"
+    description = ("A collection of drivers for the stm-imu")
+    topics = ("stm-imu", "libhal", "driver")
     settings = "compiler", "build_type", "os", "arch"
     exports_sources = ("include/*", "tests/*", "LICENSE", "CMakeLists.txt",
                        "src/*")
@@ -91,5 +91,5 @@ class libhal___device___conan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ["libhal-__device__"]
-        self.cpp_info.set_property("cmake_target_name", "libhal::__device__")
+        self.cpp_info.libs = ["libhal-stm-imu"]
+        self.cpp_info.set_property("cmake_target_name", "libhal::stm-imu")

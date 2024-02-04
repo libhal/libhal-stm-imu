@@ -13,16 +13,16 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.15)
 
-project(libhal-__device__ LANGUAGES CXX)
+project(libhal-stm-imu LANGUAGES CXX)
 
 libhal_test_and_make_library(
-  LIBRARY_NAME libhal-__device__
+  LIBRARY_NAME libhal-stm-imu
 
   SOURCES
-  src/__device__.cpp
+  src/stm-imu.cpp
 
   TEST_SOURCES
-  tests/__device__.test.cpp
+  tests/stm-imu.test.cpp
   tests/main.test.cpp
 
   PACKAGES
