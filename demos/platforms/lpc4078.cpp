@@ -15,35 +15,40 @@
 #include <libhal-armcortex/dwt_counter.hpp>
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
+
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/constants.hpp>
+#include <libhal-lpc40/i2c.hpp>
 #include <libhal-lpc40/uart.hpp>
-#include <libhal-util/as_bytes.hpp>
 
 #include "../hardware_map.hpp"
 
-hal::result<hardware_map> initialize_platform()
+hal::result<hal::stm_imu::hardware_map> initialize_platform()
 {
   using namespace hal::literals;
 
   // Set the MCU to the maximum clock speed
-  HAL_CHECK(hal::lpc40::clock::maximum(10.0_MHz));
+  HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
 
-  // Create a hardware counter
   auto& clock = hal::lpc40::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
-  static std::array<hal::byte, 64> uart0_buffer{};
-  // Get and initialize UART0 for UART based logging
-  static auto uart0 = HAL_CHECK(hal::lpc40::uart::get(0,
-                                                      uart0_buffer,
-                                                      hal::serial::settings{
-                                                        .baud_rate = 115200,
-                                                      }));
+  static std::array<hal::byte, 64> receive_buffer{};
+  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
+                                                       receive_buffer,
+                                                       hal::serial::settings{
+                                                         .baud_rate = 38400,
+                                                       })));
 
-  return hardware_map{
+  static auto i2c = HAL_CHECK((hal::lpc40::i2c::get(2,
+                                                    hal::i2c::settings{
+                                                      .clock_rate = 100.0_kHz,
+                                                    })));
+
+  return hal::stm_imu::hardware_map{
     .console = &uart0,
+    .i2c = &i2c,
     .clock = &counter,
     .reset = []() { hal::cortex_m::reset(); },
   };

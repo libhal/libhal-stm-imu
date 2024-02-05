@@ -1,4 +1,4 @@
-// Copyright 2024 Khalil Estell
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,26 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <boost/ut.hpp>
+#include <libhal-stm-imu/lis3dhtr.hpp>
 
-#include <libhal-util/serial.hpp>
-#include <libhal-util/steady_clock.hpp>
-
-#include "../hardware_map.hpp"
-
-hal::status application(hardware_map& p_map)
+namespace hal::stm_imu {
+void lis3dhtr_test()
 {
-  using namespace std::chrono_literals;
-  using namespace hal::literals;
+  using namespace boost::ut;
+  using namespace std::literals;
 
-  auto& clock = *p_map.clock;
-  auto& console = *p_map.console;
-
-  hal::print(console, "Demo Application Starting...\n\n");
-
-  while (true) {
-    hal::delay(clock, 500ms);
-    hal::print(console, "Hello, world\n");
-  }
-
-  return hal::success();
-}
+  "lis3dhtr::create()"_test = []() {
+    // Setup
+    // Exercise
+    // Verify
+  };
+};
+}  // namespace hal::stm_imu

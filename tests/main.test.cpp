@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace hal::stm-imu {
-extern void stm-imu_test();
-}  // namespace hal::stm-imu
+namespace hal::stm_imu {
+extern void lis3dhtr_test();
+}  // namespace hal::stm_imu
 
 int main()
 {
-  hal::stm-imu::stm-imu_test();
+  hal::stm_imu::lis3dhtr_test();
 }
