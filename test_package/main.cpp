@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-stm-imu/stm-imu.hpp>
+#include <libhal-stm-imu/lis3dhtr.hpp>
 #include <libhal/error.hpp>
 
 int main()
 {
-  hal::stm-imu::stm-imu_replace_me bar;
+  using namespace std::literals;
 }
 
 namespace boost {

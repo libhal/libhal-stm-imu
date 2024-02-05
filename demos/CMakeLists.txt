@@ -11,49 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+cmake_minimum_required(VERSION 3.15)
 
-cmake_minimum_required(VERSION 3.20)
+project(demos VERSION 0.0.1 LANGUAGES CXX)
 
-project(demos LANGUAGES CXX)
-
-set(platform_library $ENV{LIBHAL_PLATFORM_LIBRARY})
-set(platform $ENV{LIBHAL_PLATFORM})
-
-message(WARNING "${platform_library}")
-
-if("${platform_library}" STREQUAL "")
-    message(FATAL_ERROR
-        "Build environment variable LIBHAL_PLATFORM_LIBRARY is required for " "this project.")
-endif()
-
-find_package(libhal-${platform_library} REQUIRED CONFIG)
-find_package(libhal-stm-imu REQUIRED CONFIG)
+find_package(libhal-lpc40 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
+find_package(libhal-stm-imu REQUIRED CONFIG)
 
-set(DEMOS stm-imu)
+libhal_build_demos(
+  DEMOS
+  lis3dhtr
 
-add_library(startup_code
-    main.cpp
-    platforms/${platform}.cpp)
-target_include_directories(startup_code PUBLIC .)
-target_compile_features(startup_code PRIVATE cxx_std_20)
-target_link_libraries(startup_code PRIVATE
-    libhal::${platform_library}
-    libhal::stm-imu
-    libhal::util)
+  PACKAGES
+  libhal-lpc40
+  libhal-util
+  libhal-stm-imu
 
-foreach(demo IN LISTS DEMOS)
-    set(current_project ${demo}.elf)
-    message(STATUS "Generating Demo for \"${current_project}\"")
-    add_executable(${current_project} applications/${demo}.cpp)
-    target_include_directories(${current_project} PUBLIC .)
-    target_compile_features(${current_project} PRIVATE cxx_std_20)
-    target_compile_options(${current_project} PRIVATE -g)
-    target_link_options(${current_project} PRIVATE --oslib=semihost)
-    target_link_libraries(${current_project} PRIVATE
-        libhal::${platform_library}
-        libhal::stm-imu
-        libhal::util
-        startup_code)
-    libhal_post_build(${current_project})
-endforeach()
+  LINK_LIBRARIES
+  libhal::lpc40
+  libhal::util
+  libhal::stm-imu
+)

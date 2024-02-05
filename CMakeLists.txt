@@ -19,10 +19,10 @@ libhal_test_and_make_library(
   LIBRARY_NAME libhal-stm-imu
 
   SOURCES
-  src/stm-imu.cpp
+  src/lis3dhtr.cpp
 
   TEST_SOURCES
-  tests/stm-imu.test.cpp
+  tests/lis3dhtr.test.cpp
   tests/main.test.cpp
 
   PACKAGES
