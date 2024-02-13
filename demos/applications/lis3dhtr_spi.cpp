@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<<< HEAD:demos/applications/lis3dhtr_i2c.cpp
-#include <libhal-stm-imu/lis3dhtr_i2c.hpp>
-========
-#include <libhal-stm-imu/lis3dhtr.hpp>
->>>>>>>> 787b047 (:sparkles: Add basic working support for stm's lis3dhtr imu, I2C):demos/applications/lis3dhtr.cpp
+#include <libhal-lpc40/output_pin.hpp>
+#include <libhal-stm-imu/lis3dhtr_spi.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
+#include <libhal/i2c.hpp>
 
 #include "../hardware_map.hpp"
 
@@ -29,20 +27,13 @@ hal::status application(hal::stm_imu::hardware_map& p_map)
 
   auto& clock = *p_map.clock;
   auto& console = *p_map.console;
-  auto& i2c = *p_map.i2c;
+  auto& spi = *p_map.spi;
+  auto& cs = *p_map.output_pin;
 
-<<<<<<<< HEAD:demos/applications/lis3dhtr_i2c.cpp
-  hal::print(console, "Starting lis3dhtr_i2c Application...\n");
+  hal::print(console, "Starting lis3dhtr_spi Application...\n");
   hal::delay(clock, 50ms);
 
-  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr_i2c::create(i2c));
-========
-  hal::print(console, "Starting lis3dhtr Application...\n");
-  hal::delay(clock, 50ms);
-
-  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr::create(i2c));
->>>>>>>> 787b047 (:sparkles: Add basic working support for stm's lis3dhtr imu, I2C):demos/applications/lis3dhtr.cpp
-
+  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr_spi::create(spi, cs));
   while (true) {
     hal::delay(clock, 500ms);
     auto acceleration = HAL_CHECK(lis.read());

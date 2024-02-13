@@ -12,15 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <boost/ut.hpp>
+<<<<<<<< HEAD:tests/lis3dhtr_i2c.test.cpp
+#include <libhal-stm-imu/lis3dhtr_i2c.hpp>
+
+namespace hal::stm_imu {
+void lis3dhtr_i2c_test()
+========
 #include <libhal-stm-imu/lis3dhtr.hpp>
 
 namespace hal::stm_imu {
 void lis3dhtr_test()
+>>>>>>>> 787b047 (:sparkles: Add basic working support for stm's lis3dhtr imu, I2C):tests/lis3dhtr.test.cpp
 {
   using namespace boost::ut;
   using namespace std::literals;
 
+<<<<<<<< HEAD:tests/lis3dhtr_i2c.test.cpp
+  "lis3dhtr_i2c::create()"_test = []() {
+========
   "lis3dhtr::create()"_test = []() {
+>>>>>>>> 787b047 (:sparkles: Add basic working support for stm's lis3dhtr imu, I2C):tests/lis3dhtr.test.cpp
     // Setup
     // Exercise
     // Verify

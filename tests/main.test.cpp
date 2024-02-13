@@ -13,10 +13,12 @@
 // limitations under the License.
 
 namespace hal::stm_imu {
-extern void lis3dhtr_test();
+extern void lis3dhtr_i2c_test();
+extern void lis3dhtr_spi_test();
 }  // namespace hal::stm_imu
 
 int main()
 {
-  hal::stm_imu::lis3dhtr_test();
+  hal::stm_imu::lis3dhtr_i2c_test();
+  hal::stm_imu::lis3dhtr_spi_test();
 }

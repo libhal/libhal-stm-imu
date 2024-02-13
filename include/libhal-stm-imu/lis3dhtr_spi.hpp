@@ -15,19 +15,20 @@
 #pragma once
 
 #include <libhal-util/bit.hpp>
-#include <libhal-util/i2c.hpp>
 #include <libhal-util/map.hpp>
+#include <libhal-util/serial.hpp>
+#include <libhal-util/spi.hpp>
 #include <libhal/accelerometer.hpp>
+#include <libhal/output_pin.hpp>
+#include <libhal/steady_clock.hpp>
+#include <libhal/timeout.hpp>
 
 namespace hal::stm_imu {
-class lis3dhtr : public hal::accelerometer
+class lis3dhtr_spi : public hal::accelerometer
 {
 public:
-  /// The device address when SDO/SA0 is connected to GND.
-  static constexpr hal::byte low_address = 0b0001'1000;
-  /// The device address when SDO/SA0 is connected to 3v3.
-  static constexpr hal::byte high_address = 0b0001'1001;
-
+  /// @brief max_acceleration is the maxium g's that the device will read
+  /// NOTE: the higher the max gravity you select, the lower your resolution is
   enum class max_acceleration : hal::byte
   {
     /// 2x the average earth gravity, acceleration
@@ -40,9 +41,9 @@ public:
     g16 = 0x03,
   };
 
-  /// @brief power_mode_config is used to set the data rates of the
-  /// high operating, normal operating, and low operating frequency modes
-  enum class data_rate_configs : hal::byte
+  /// @brief data_rate_config are the different data rates that the imu can be
+  /// programmed to output data at in the different modes
+  enum class data_rate_config : hal::byte
   {
     // the following set all resolution modes to the same data rates listed
     // 0Hz (this is the power down command)
@@ -68,42 +69,49 @@ public:
     mode_9 = 0b1001,
   };
 
+  /// @brief spi_mode are the two different spi modes that the device supports
+  enum class spi_mode : hal::byte
+  {
+    // this enabled 4 wire spi mode (full duplex)
+    four_wire = 0b0,
+    // this enabled 3 wire spi mode (half duplex)
+    three_wire = 0b1,
+  };
+
   /**
    * @brief Constructs and returns lis object
    *
-   * @param p_i2c - I2C bus the lis is connected to
-   * @param p_device_address - address of the lis3dhtr, defaults to the low
-   * address
+   * @param p_spi - spi bus the lis is connected to
    * @param p_gscale - The full scale setting for the imu, defaults to 2g
-   * @return lis3dhtr object
+   * @return lis3dhtr_spi object
    * @throws std::errc::invalid_byte_sequence - when ID register does not match
-   * the expected ID for the lis3dhtr device.
+   * the expected ID for the lis3dhtr_spi device.
    */
-  static result<lis3dhtr> create(
-    hal::i2c& p_i2c,
-    hal::byte p_device_address = low_address,
+  static result<lis3dhtr_spi> create(
+    hal::spi& p_spi,
+    hal::output_pin& p_cs,
     max_acceleration p_gscale = max_acceleration::g2);
 
   /**
-   * @brief verify's that the device exists on the I2C line
+   * @brief verify's that the device exists on the spi line
    *
-   * @return hal::status - success or errors from i2c communication
+   * @return hal::status - success or errors from spi communication
    */
   [[nodiscard]] hal::status verify_device();
 
   /**
    * @brief Re-enables acceleration readings from the lis
    *
-   * @return hal::status - success or errors from i2c communication
+   * @return hal::status - success or errors from spi communication
    * @throws std::errc::invalid_byte_sequence - when ID register does not match
-   * the expected ID for the lis3dhtr device.
+   * the expected ID for the lis3dhtr_spi device.
    */
   [[nodiscard]] hal::status power_on();
 
   /**
-   * @brief Disables acceleration reading from the lis3dhtr.
+   * @brief Disables acceleration reading from the lis3dhtr_spi.
    *
-   * @return hal::status - success or errors from i2c communication
+   * @return hal::status - success or errors from spi communication
    */
   [[nodiscard]] hal::status power_off();
 
@@ -112,35 +120,45 @@ public:
    *
    * @param p_data_rate - the frequency that new data can be read from the
    * device
-   * @return hal::status - success or errors from i2c communication
+   * @return hal::status - success or errors from spi communication
    */
-  [[nodiscard]] hal::status configure_data_rates(data_rate_configs p_data_rate);
+  [[nodiscard]] hal::status configure_data_rates(data_rate_config p_data_rate);
 
   /**
    * @brief Changes the gravity scale that the lis is reading. The larger the
    * scale, the less precise the reading.
    *
    * @param p_gravity_code - Scales in powers of 2 up to 16.
-   * @return hal::status - success or errors from i2c communication
+   * @return hal::status - success or errors from spi communication
    */
   [[nodiscard]] hal::status configure_full_scale(
     max_acceleration p_gravity_code);
 
 private:
   /**
-   * @brief lis3dhtr Constructor
+   * @brief lis3dhtr_spi Constructor
    *
-   * @param p_i2c - i2c peripheral used to commnicate with device.
-   * @param p_address - lis3dhtr device address.
+   * @param p_spi - spi peripheral used to commnicate with device.
+   * @param p_address - lis3dhtr_spi device address.
    */
-  lis3dhtr(i2c& p_i2c, hal::byte p_device_address, max_acceleration p_gscale);
+  lis3dhtr_spi(spi& p_spi, hal::output_pin& p_cs, max_acceleration p_gscale);
 
-  hal::result<accelerometer::read_t> driver_read() override;
+  hal::result<accelerometer::read_t> driver_read();
 
-  /// The I2C peripheral used for communication with the device.
-  hal::i2c* m_i2c;
-  /// The configurable device address used for communication.
-  hal::byte m_address;
+  /**
+   * @brief Changes what spi wire mode that the device will use to transfer data
+   *
+   * @param p_spi_mode - The spi mode that the device will use
+   * @return hal::status - success or errors from spi communication
+   */
+  [[nodiscard]] hal::status configure_spi_mode(spi_mode p_spi_mode);
+
+  /// The spi peripheral used for communication with the device.
+  hal::spi* m_spi;
+
+  // The output pin used to select the lis3dhtr on the spi bus
+  hal::output_pin* m_cs;
+
   /// The minimum and maxium g's that the device will read
   hal::byte m_gscale;
 };
