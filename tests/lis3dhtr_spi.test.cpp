@@ -1,4 +1,4 @@
-// Copyright 2024 Khalil Estell
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,19 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-#include <libhal-stm-imu/lis3dhtr_i2c.hpp>
+#include <boost/ut.hpp>
 #include <libhal-stm-imu/lis3dhtr_spi.hpp>
-#include <libhal/error.hpp>
 
-int main()
+namespace hal::stm_imu {
+void lis3dhtr_spi_test()
 {
+  using namespace boost::ut;
   using namespace std::literals;
-}
 
-namespace boost {
-void throw_exception(std::exception const& e)
-{
-  hal::halt();
-}
-}  // namespace boost
+  "lis3dhtr_spi::create()"_test = []() {
+    // Setup
+    // Exercise
+    // Verify
+  };
+};
+}  // namespace hal::stm_imu

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-stm-imu/lis3dhtr.hpp>
+#include <libhal-stm-imu/lis3dhtr_i2c.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
@@ -27,10 +27,10 @@ hal::status application(hal::stm_imu::hardware_map& p_map)
   auto& console = *p_map.console;
   auto& i2c = *p_map.i2c;
 
-  hal::print(console, "Starting lis3dhtr Application...\n");
+  hal::print(console, "Starting lis3dhtr_i2c Application...\n");
   hal::delay(clock, 50ms);
 
-  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr::create(i2c));
+  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr_i2c::create(i2c));
 
   while (true) {
     hal::delay(clock, 500ms);

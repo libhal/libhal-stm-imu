@@ -16,13 +16,17 @@
 
 #include <libhal/functional.hpp>
 #include <libhal/i2c.hpp>
+#include <libhal/output_pin.hpp>
 #include <libhal/serial.hpp>
+#include <libhal/spi.hpp>
 #include <libhal/steady_clock.hpp>
 namespace hal::stm_imu {
 struct hardware_map
 {
   hal::serial* console;
   hal::i2c* i2c;
+  hal::spi* spi;
+  hal::output_pin* output_pin;
   hal::steady_clock* clock;
   hal::callback<void()> reset;
 };
