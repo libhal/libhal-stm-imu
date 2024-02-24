@@ -38,14 +38,18 @@ hal::status lis3dhtr_spi::verify_device()
 {
   // the expected value as read from the data sheet is 0x33
   constexpr auto expected = 0x33;
+  constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
 
-  auto read_from_who_am_i = static_cast<hal::byte>(who_am_i_register | 0x80);
+  auto read_from_who_am_i = hal::bit_value(0U)
+                              .insert<addr_bit_mask>(who_am_i_register)
+                              .set<spi_read_bit_mask>()
+                              .to<hal::byte>();
 
   HAL_CHECK(m_cs->level(false));
   auto who_am_i = HAL_CHECK(
     hal::write_then_read<1>(*m_spi, std::array{ read_from_who_am_i }));
   HAL_CHECK(m_cs->level(true));
-
+  // TODO(#<5>): This error needs to be more specific
   if (who_am_i[0] != expected) {
     return hal::new_error();
   }
@@ -68,14 +72,20 @@ hal::status lis3dhtr_spi::power_off()
 hal::status lis3dhtr_spi::configure_data_rates(data_rate_config p_data_rate)
 {
   constexpr auto configure_reg_bit_mask = hal::bit_mask::from<7, 4>();
+  constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
 
-  auto read_from_ctrl_reg1 = static_cast<hal::byte>(ctrl_reg1 | 0x80);
-  auto write_to_ctrl_reg1 = static_cast<hal::byte>(ctrl_reg1 | 0x40);
-  auto ctrl_reg1_array = std::array{ read_from_ctrl_reg1 };
+  auto read_from_ctrl_reg1 = hal::bit_value(0U)
+                               .insert<addr_bit_mask>(ctrl_reg1)
+                               .set<spi_read_bit_mask>()
+                               .to<hal::byte>();
+  auto write_to_ctrl_reg1 = hal::bit_value(0U)
+                              .insert<addr_bit_mask>(ctrl_reg1)
+                              .set<spi_addr_inc_bit_mask>()
+                              .to<hal::byte>();
 
   HAL_CHECK(m_cs->level(false));
-  auto ctrl_reg1_data =
-    HAL_CHECK(hal::write_then_read<1>(*m_spi, ctrl_reg1_array));
+  auto ctrl_reg1_data = HAL_CHECK(
+    hal::write_then_read<1>(*m_spi, std::array{ read_from_ctrl_reg1 }));
   HAL_CHECK(m_cs->level(true));
 
   hal::bit_modify(ctrl_reg1_data[0])
@@ -94,9 +104,16 @@ hal::status lis3dhtr_spi::configure_full_scale(max_acceleration p_gravity_code)
   m_gscale = static_cast<hal::byte>(p_gravity_code);
 
   constexpr auto configure_reg_bit_mask = hal::bit_mask::from<5, 4>();
+  constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
 
-  auto read_from_ctrl_reg4 = static_cast<hal::byte>(ctrl_reg4 | 0x80);
-  auto write_to_ctrl_reg4 = static_cast<hal::byte>(ctrl_reg4 | 0x40);
+  auto read_from_ctrl_reg4 = hal::bit_value(0U)
+                               .insert<addr_bit_mask>(ctrl_reg4)
+                               .set<spi_read_bit_mask>()
+                               .to<hal::byte>();
+  auto write_to_ctrl_reg4 = hal::bit_value(0U)
+                              .insert<addr_bit_mask>(ctrl_reg4)
+                              .set<spi_addr_inc_bit_mask>()
+                              .to<hal::byte>();
 
   auto ctrl_reg4_array = std::array{ read_from_ctrl_reg4 };
 
@@ -132,8 +149,13 @@ hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
   accelerometer::read_t acceleration;
   constexpr auto number_of_axis = 3;
   constexpr auto bytes_per_axis = 2;
+  constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
 
-  auto read_from_xyz_register = static_cast<hal::byte>(out_x_l | 0xC0);
+  auto read_from_xyz_register = hal::bit_value(0U)
+                                  .insert<addr_bit_mask>(out_x_l)
+                                  .set<spi_read_bit_mask>()
+                                  .set<spi_addr_inc_bit_mask>()
+                                  .to<hal::byte>();
 
   HAL_CHECK(m_cs->level(false));
   auto xyz_acceleration =
@@ -146,19 +168,30 @@ hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
    nibble be 0 so we shift it all to the right by 4 and or the low and high
    bytes together 0000'0000'0000'0000
   */
+  constexpr auto read_l_bit_mask = hal::bit_mask::from<7, 0>();
   constexpr auto read_h_bit_mask = hal::bit_mask::from<15, 8>();
 
-  auto x = static_cast<uint16_t>(xyz_acceleration[0]);
-  hal::bit_modify(x).insert<read_h_bit_mask>(
-    static_cast<uint16_t>(xyz_acceleration[1]));
+  auto x_l_acceleration = static_cast<uint16_t>(xyz_acceleration[0]);
+  auto x_h_acceleration = static_cast<uint16_t>(xyz_acceleration[1]);
+  auto y_l_acceleration = static_cast<uint16_t>(xyz_acceleration[2]);
+  auto y_h_acceleration = static_cast<uint16_t>(xyz_acceleration[3]);
+  auto z_l_acceleration = static_cast<uint16_t>(xyz_acceleration[4]);
+  auto z_h_acceleration = static_cast<uint16_t>(xyz_acceleration[5]);
 
-  auto y = static_cast<uint16_t>(xyz_acceleration[2]);
-  hal::bit_modify(y).insert<read_h_bit_mask>(
-    static_cast<uint16_t>(xyz_acceleration[3]));
+  auto x = hal::bit_value(0U)
+             .insert<read_l_bit_mask>(x_l_acceleration)
+             .insert<read_h_bit_mask>(x_h_acceleration)
+             .to<uint16_t>();
 
-  auto z = static_cast<uint16_t>(xyz_acceleration[4]);
-  hal::bit_modify(z).insert<read_h_bit_mask>(
-    static_cast<uint16_t>(xyz_acceleration[5]));
+  auto y = hal::bit_value(0U)
+             .insert<read_l_bit_mask>(y_l_acceleration)
+             .insert<read_h_bit_mask>(y_h_acceleration)
+             .to<uint16_t>();
+
+  auto z = hal::bit_value(0U)
+             .insert<read_l_bit_mask>(z_l_acceleration)
+             .insert<read_h_bit_mask>(z_h_acceleration)
+             .to<uint16_t>();
 
   // output_limits is affected by the configured g_scale, if it is set to 2 then
   // the code is 0, add one to the code and shift 1 by that many, this will
@@ -183,10 +216,17 @@ hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
 hal::status lis3dhtr_spi::configure_spi_mode(spi_mode p_spi_mode)
 {
 
-  constexpr auto configure_reg_bit_mask = hal::bit_mask::from<0, 0>();
+  constexpr auto configure_reg_bit_mask = hal::bit_mask::from<0>();
+  constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
 
-  auto read_from_ctrl_reg4 = static_cast<hal::byte>(ctrl_reg4 | 0x80);
-  auto write_to_ctrl_reg4 = static_cast<hal::byte>(ctrl_reg4 | 0x40);
+  auto read_from_ctrl_reg4 = hal::bit_value(0U)
+                               .set<spi_read_bit_mask>()
+                               .insert<addr_bit_mask>(ctrl_reg4)
+                               .to<hal::byte>();
+  auto write_to_ctrl_reg4 = hal::bit_value(0U)
+                              .set<spi_addr_inc_bit_mask>()
+                              .insert<addr_bit_mask>(ctrl_reg4)
+                              .to<hal::byte>();
 
   auto ctrl_reg4_array = std::array{ read_from_ctrl_reg4 };
 

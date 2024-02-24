@@ -84,7 +84,7 @@ public:
    * @param p_spi - spi bus the lis is connected to
    * @param p_gscale - The full scale setting for the imu, defaults to 2g
    * @return lis3dhtr_spi object
-   * @throws std::errc::invalid_byte_sequence - when ID register does not match
+   * @throws std::errc::protocol_error - when ID register does not match
    * the expected ID for the lis3dhtr_spi device.
    */
   static result<lis3dhtr_spi> create(
