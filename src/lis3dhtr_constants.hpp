@@ -12,13 +12,18 @@ constexpr hal::byte ctrl_reg4 = 0x23;
 constexpr hal::byte ctrl_reg5 = 0x24;
 /// Used to change fifo modes
 constexpr hal::byte fifo_ctrl_reg = 0x2E;
+// This is the bit mask to indicate a read on spi
+constexpr hal::bit_mask spi_read_bit_mask = hal::bit_mask::from<7>();
+// // this is the bit mask to indicate a auto increment address on reads and
+// writes
+constexpr hal::bit_mask spi_addr_inc_bit_mask = hal::bit_mask::from<6>();
+
 /// reads from all
 constexpr hal::byte read_xyz_axis = 0xA8;
 /// low bits of x accelerations data
 constexpr hal::byte out_x_l = 0x28;
 /// high bits of x accelerations data
 constexpr hal::byte out_x_h = 0x29;
-
 /// low bits of y accelerations data
 constexpr hal::byte out_y_l = 0x2A;
 /// high bits of y accelerations data

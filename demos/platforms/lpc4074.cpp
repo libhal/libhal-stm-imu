@@ -18,6 +18,9 @@
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/i2c.hpp>
+#include <libhal-lpc40/spi.hpp>
+
+#include <libhal-lpc40/output_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
 
 #include "../hardware_map.hpp"
@@ -45,9 +48,15 @@ hal::result<hal::stm_imu::hardware_map> initialize_platform()
                                                       .clock_rate = 100.0_kHz,
                                                     })));
 
+  static auto spi = HAL_CHECK((hal::lpc40::spi::get(2)));
+
+  static auto output_pin = HAL_CHECK(hal::lpc40::output_pin::get(0, 15));
+
   return hal::stm_imu::hardware_map{
     .console = &uart0,
     .i2c = &i2c,
+    .spi = &spi,
+    .output_pin = &output_pin,
     .clock = &counter,
     .reset = []() { hal::cortex_m::reset(); },
   };

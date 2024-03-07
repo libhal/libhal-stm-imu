@@ -20,51 +20,88 @@
 #include <libhal/accelerometer.hpp>
 
 namespace hal::stm_imu {
-class lis3dhtr : public hal::accelerometer
+class lis3dhtr_i2c : public hal::accelerometer
 {
 public:
-  /// The device address when SDO/SA0 is connected to GND.
+  /**
+   * @brief The device address when SDO/SA0 is connected to GND
+   */
   static constexpr hal::byte low_address = 0b0001'1000;
-  /// The device address when SDO/SA0 is connected to 3v3.
+  /**
+   *  @brief The device address when SDO/SA0 is connected to 3v3.
+   */
   static constexpr hal::byte high_address = 0b0001'1001;
 
+  /**
+   * @brief max_acceleration is the maxium g's that the device will read
+   * NOTE: the higher the max gravity you select, the lower your resolution is
+   */
   enum class max_acceleration : hal::byte
   {
-    /// 2x the average earth gravity, acceleration
+    /**
+     * @brief 2x the average earth gravity, acceleration
+     */
     g2 = 0x00,
-    /// 4x the average earth gravity, acceleration
+    /**
+     * @brief 4x the average earth gravity, acceleration
+     */
     g4 = 0x01,
-    /// 8x the average earth gravity, acceleration
+    /**
+     * @brief 8x the average earth gravity, acceleration
+     */
     g8 = 0x02,
-    /// 16x the average earth gravity, acceleration
+    /**
+     * @brief 16x the average earth gravity, acceleration
+     */
     g16 = 0x03,
   };
 
-  /// @brief power_mode_config is used to set the data rates of the
-  /// high operating, normal operating, and low operating frequency modes
-  enum class data_rate_configs : hal::byte
+  /**
+   * @brief data_rate_config are the different data rates that the imu can be
+   * programmed to output data at in the different modes
+   */
+  enum class data_rate_config : hal::byte
   {
-    // the following set all resolution modes to the same data rates listed
-    // 0Hz (this is the power down command)
+    /**
+     * @brief 0Hz (this is the power down command)
+     */
     mode_0 = 0b0000,
-    // 1Hz
+    /**
+     * @brief 1Hz
+     */
     mode_1 = 0b0001,
-    // 10Hz
+    /**
+     * @brief 10Hz
+     */
     mode_2 = 0b0010,
-    // 25Hz
+    /**
+     * @brief 25Hz
+     */
     mode_3 = 0b0011,
-    // 50Hz
+    /**
+     * @brief 50Hz
+     */
     mode_4 = 0b0100,
-    // 100Hz
+    /**
+     * @brief 100Hz
+     */
     mode_5 = 0b0101,
-    // 200Hz
+    /**
+     * @brief 200Hz
+     */
     mode_6 = 0b0110,
-    // 400Hz
+    /**
+     * @brief 400Hz
+     */
     mode_7 = 0b0111,
-    // just low power mode is configured in this one to 1.6kHz
-    // this is also the default mode set by power_on
+    /**
+     * @brief just low power mode is configured in this one to 1.6kHz
+     * this is also the default mode set by power_on
+     */
     mode_8 = 0b1000,
-    // High resolution = normal = 1.344kHz; low power mode = 5.376kHz
+    /**
+     * @brief High resolution = normal = 1.344kHz; low power mode = 5.376kHz
+     */
     mode_9 = 0b1001,
   };
 
@@ -72,14 +109,14 @@ public:
    * @brief Constructs and returns lis object
    *
    * @param p_i2c - I2C bus the lis is connected to
-   * @param p_device_address - address of the lis3dhtr, defaults to the low
+   * @param p_device_address - address of the lis3dhtr_i2c, defaults to the low
    * address
    * @param p_gscale - The full scale setting for the imu, defaults to 2g
-   * @return lis3dhtr object
+   * @return lis3dhtr_i2c object
    * @throws std::errc::invalid_byte_sequence - when ID register does not match
-   * the expected ID for the lis3dhtr device.
+   * the expected ID for the lis3dhtr_i2c device.
    */
-  static result<lis3dhtr> create(
+  static result<lis3dhtr_i2c> create(
     hal::i2c& p_i2c,
     hal::byte p_device_address = low_address,
     max_acceleration p_gscale = max_acceleration::g2);
@@ -96,12 +133,12 @@ public:
    *
    * @return hal::status - success or errors from i2c communication
    * @throws std::errc::invalid_byte_sequence - when ID register does not match
-   * the expected ID for the lis3dhtr device.
+   * the expected ID for the lis3dhtr_i2c device.
    */
   [[nodiscard]] hal::status power_on();
 
   /**
-   * @brief Disables acceleration reading from the lis3dhtr.
+   * @brief Disables acceleration reading from the lis3dhtr_i2c.
    *
    * @return hal::status - success or errors from i2c communication
    */
@@ -114,7 +151,7 @@ public:
    * device
    * @return hal::status - success or errors from i2c communication
    */
-  [[nodiscard]] hal::status configure_data_rates(data_rate_configs p_data_rate);
+  [[nodiscard]] hal::status configure_data_rates(data_rate_config p_data_rate);
 
   /**
    * @brief Changes the gravity scale that the lis is reading. The larger the
@@ -128,12 +165,14 @@ public:
 
 private:
   /**
-   * @brief lis3dhtr Constructor
+   * @brief lis3dhtr_i2c Constructor
    *
    * @param p_i2c - i2c peripheral used to commnicate with device.
-   * @param p_address - lis3dhtr device address.
+   * @param p_address - lis3dhtr_i2c device address.
    */
-  lis3dhtr(i2c& p_i2c, hal::byte p_device_address, max_acceleration p_gscale);
+  lis3dhtr_i2c(i2c& p_i2c,
+               hal::byte p_device_address,
+               max_acceleration p_gscale);
 
   hal::result<accelerometer::read_t> driver_read() override;
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../include/libhal-stm-imu/lis3dhtr.hpp"
+#include "../include/libhal-stm-imu/lis3dhtr_i2c.hpp"
 #include "lis3dhtr_constants.hpp"
 
 namespace hal::stm_imu {
@@ -20,18 +20,18 @@ using namespace std::chrono_literals;
 using namespace hal::literals;
 
 // public
-result<lis3dhtr> lis3dhtr::create(hal::i2c& p_i2c,
-                                  hal::byte p_device_address,
-                                  max_acceleration p_gscale)
+result<lis3dhtr_i2c> lis3dhtr_i2c::create(hal::i2c& p_i2c,
+                                          hal::byte p_device_address,
+                                          max_acceleration p_gscale)
 {
-  lis3dhtr lis(p_i2c, p_device_address, p_gscale);
+  lis3dhtr_i2c lis(p_i2c, p_device_address, p_gscale);
   HAL_CHECK(lis.verify_device());
   HAL_CHECK(lis.power_on());
   HAL_CHECK(lis.configure_full_scale(p_gscale));
   return lis;
 }
 
-hal::status lis3dhtr::verify_device()
+hal::status lis3dhtr_i2c::verify_device()
 {
   // the expected value as read from the data sheet is 0x33
   constexpr auto expected = 0x33;
@@ -48,19 +48,19 @@ hal::status lis3dhtr::verify_device()
   return hal::success();
 }
 
-hal::status lis3dhtr::power_on()
+hal::status lis3dhtr_i2c::power_on()
 {
-  HAL_CHECK(configure_data_rates(data_rate_configs::mode_7));
+  HAL_CHECK(configure_data_rates(data_rate_config::mode_7));
   return hal::success();
 }
 
-hal::status lis3dhtr::power_off()
+hal::status lis3dhtr_i2c::power_off()
 {
-  HAL_CHECK(configure_data_rates(data_rate_configs::mode_0));
+  HAL_CHECK(configure_data_rates(data_rate_config::mode_0));
   return hal::success();
 }
 
-hal::status lis3dhtr::configure_data_rates(data_rate_configs p_data_rate)
+hal::status lis3dhtr_i2c::configure_data_rates(data_rate_config p_data_rate)
 {
 
   constexpr auto configure_reg_bit_mask = hal::bit_mask::from<7, 4>();
@@ -78,7 +78,7 @@ hal::status lis3dhtr::configure_data_rates(data_rate_configs p_data_rate)
   return hal::success();
 }
 
-hal::status lis3dhtr::configure_full_scale(max_acceleration p_gravity_code)
+hal::status lis3dhtr_i2c::configure_full_scale(max_acceleration p_gravity_code)
 {
 
   m_gscale = static_cast<hal::byte>(p_gravity_code);
@@ -99,16 +99,16 @@ hal::status lis3dhtr::configure_full_scale(max_acceleration p_gravity_code)
 
 // private
 
-lis3dhtr::lis3dhtr(hal::i2c& p_i2c,
-                   hal::byte p_device_address,
-                   max_acceleration p_gscale)
+lis3dhtr_i2c::lis3dhtr_i2c(hal::i2c& p_i2c,
+                           hal::byte p_device_address,
+                           max_acceleration p_gscale)
   : m_i2c(&p_i2c)
   , m_address(p_device_address)
   , m_gscale(static_cast<hal::byte>(p_gscale))
 {
 }
 
-hal::result<accelerometer::read_t> lis3dhtr::driver_read()
+hal::result<accelerometer::read_t> lis3dhtr_i2c::driver_read()
 {
   accelerometer::read_t acceleration;
   constexpr auto number_of_axis = 3;

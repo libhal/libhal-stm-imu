@@ -21,7 +21,8 @@ find_package(libhal-stm-imu REQUIRED CONFIG)
 
 libhal_build_demos(
   DEMOS
-  lis3dhtr
+  lis3dhtr_i2c
+  lis3dhtr_spi
 
   PACKAGES
   libhal-lpc40
