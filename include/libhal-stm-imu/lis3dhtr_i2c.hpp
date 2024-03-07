@@ -23,50 +23,85 @@ namespace hal::stm_imu {
 class lis3dhtr_i2c : public hal::accelerometer
 {
 public:
-  /// The device address when SDO/SA0 is connected to GND.
+  /**
+   * @brief The device address when SDO/SA0 is connected to GND
+   */
   static constexpr hal::byte low_address = 0b0001'1000;
-  /// The device address when SDO/SA0 is connected to 3v3.
+  /**
+   *  @brief The device address when SDO/SA0 is connected to 3v3.
+   */
   static constexpr hal::byte high_address = 0b0001'1001;
 
-  /// @brief max_acceleration is the maxium g's that the device will read
-  /// NOTE: the higher the max gravity you select, the lower your resolution is
+  /**
+   * @brief max_acceleration is the maxium g's that the device will read
+   * NOTE: the higher the max gravity you select, the lower your resolution is
+   */
   enum class max_acceleration : hal::byte
   {
-    /// 2x the average earth gravity, acceleration
+    /**
+     * @brief 2x the average earth gravity, acceleration
+     */
     g2 = 0x00,
-    /// 4x the average earth gravity, acceleration
+    /**
+     * @brief 4x the average earth gravity, acceleration
+     */
     g4 = 0x01,
-    /// 8x the average earth gravity, acceleration
+    /**
+     * @brief 8x the average earth gravity, acceleration
+     */
     g8 = 0x02,
-    /// 16x the average earth gravity, acceleration
+    /**
+     * @brief 16x the average earth gravity, acceleration
+     */
     g16 = 0x03,
   };
 
-  /// @brief data_rate_config are the different data rates that the imu can be
-  /// programmed to output data at in the different modes
+  /**
+   * @brief data_rate_config are the different data rates that the imu can be
+   * programmed to output data at in the different modes
+   */
   enum class data_rate_config : hal::byte
   {
-    // the following set all resolution modes to the same data rates listed
-    // 0Hz (this is the power down command)
+    /**
+     * @brief 0Hz (this is the power down command)
+     */
     mode_0 = 0b0000,
-    // 1Hz
+    /**
+     * @brief 1Hz
+     */
     mode_1 = 0b0001,
-    // 10Hz
+    /**
+     * @brief 10Hz
+     */
     mode_2 = 0b0010,
-    // 25Hz
+    /**
+     * @brief 25Hz
+     */
     mode_3 = 0b0011,
-    // 50Hz
+    /**
+     * @brief 50Hz
+     */
     mode_4 = 0b0100,
-    // 100Hz
+    /**
+     * @brief 100Hz
+     */
     mode_5 = 0b0101,
-    // 200Hz
+    /**
+     * @brief 200Hz
+     */
     mode_6 = 0b0110,
-    // 400Hz
+    /**
+     * @brief 400Hz
+     */
     mode_7 = 0b0111,
-    // just low power mode is configured in this one to 1.6kHz
-    // this is also the default mode set by power_on
+    /**
+     * @brief just low power mode is configured in this one to 1.6kHz
+     * this is also the default mode set by power_on
+     */
     mode_8 = 0b1000,
-    // High resolution = normal = 1.344kHz; low power mode = 5.376kHz
+    /**
+     * @brief High resolution = normal = 1.344kHz; low power mode = 5.376kHz
+     */
     mode_9 = 0b1001,
   };
 
