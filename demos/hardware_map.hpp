@@ -20,8 +20,8 @@
 #include <libhal/serial.hpp>
 #include <libhal/spi.hpp>
 #include <libhal/steady_clock.hpp>
-namespace hal::stm_imu {
-struct hardware_map
+
+struct hardware_map_t
 {
   hal::serial* console;
   hal::i2c* i2c;
@@ -30,8 +30,8 @@ struct hardware_map
   hal::steady_clock* clock;
   hal::callback<void()> reset;
 };
-}  // namespace hal::stm_imu
+
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.
-hal::status application(hal::stm_imu::hardware_map& p_map);
-hal::result<hal::stm_imu::hardware_map> initialize_platform();
+void application(hardware_map_t& p_map);
+hardware_map_t initialize_platform();

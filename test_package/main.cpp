@@ -14,16 +14,8 @@
 
 #include <libhal-stm-imu/lis3dhtr_i2c.hpp>
 #include <libhal-stm-imu/lis3dhtr_spi.hpp>
-#include <libhal/error.hpp>
 
 int main()
 {
   using namespace std::literals;
 }
-
-namespace boost {
-void throw_exception(std::exception const& e)
-{
-  hal::halt();
-}
-}  // namespace boost

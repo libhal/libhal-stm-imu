@@ -26,12 +26,4 @@ libhal_test_and_make_library(
   tests/lis3dhtr_i2c.test.cpp
   tests/lis3dhtr_spi.test.cpp
   tests/main.test.cpp
-
-  PACKAGES
-  libhal
-  libhal-util
-
-  LINK_LIBRARIES
-  libhal::libhal
-  libhal::util
 )

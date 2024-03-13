@@ -13,11 +13,7 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.15)
 
-project(demos VERSION 0.0.1 LANGUAGES CXX)
-
-find_package(libhal-lpc40 REQUIRED CONFIG)
-find_package(libhal-util REQUIRED CONFIG)
-find_package(libhal-stm-imu REQUIRED CONFIG)
+project(demos LANGUAGES CXX)
 
 libhal_build_demos(
   DEMOS
@@ -25,12 +21,8 @@ libhal_build_demos(
   lis3dhtr_spi
 
   PACKAGES
-  libhal-lpc40
-  libhal-util
   libhal-stm-imu
 
   LINK_LIBRARIES
-  libhal::lpc40
-  libhal::util
   libhal::stm-imu
 )

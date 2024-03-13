@@ -25,34 +25,33 @@
 
 #include "../hardware_map.hpp"
 
-hal::result<hal::stm_imu::hardware_map> initialize_platform()
+hardware_map_t initialize_platform()
 {
   using namespace hal::literals;
 
   // Set the MCU to the maximum clock speed
-  HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
+  hal::lpc40::maximum(12.0_MHz);
 
-  auto& clock = hal::lpc40::clock::get();
-  auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
-  static hal::cortex_m::dwt_counter counter(cpu_frequency);
+  static hal::cortex_m::dwt_counter counter(
+    hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu));
 
   static std::array<hal::byte, 64> receive_buffer{};
-  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
-                                                       receive_buffer,
-                                                       hal::serial::settings{
-                                                         .baud_rate = 38400,
-                                                       })));
+  static hal::lpc40::uart uart0(0,
+                                receive_buffer,
+                                hal::serial::settings{
+                                  .baud_rate = 38400,
+                                });
 
-  static auto i2c = HAL_CHECK((hal::lpc40::i2c::get(2,
-                                                    hal::i2c::settings{
-                                                      .clock_rate = 100.0_kHz,
-                                                    })));
+  static hal::lpc40::i2c i2c(2,
+                             hal::i2c::settings{
+                               .clock_rate = 100.0_kHz,
+                             });
 
-  static auto spi = HAL_CHECK((hal::lpc40::spi::get(2)));
+  static hal::lpc40::spi spi(2);
 
-  static auto output_pin = HAL_CHECK(hal::lpc40::output_pin::get(0, 16));
+  static hal::lpc40::output_pin output_pin(0, 16);
 
-  return hal::stm_imu::hardware_map{
+  return hardware_map_t{
     .console = &uart0,
     .i2c = &i2c,
     .spi = &spi,

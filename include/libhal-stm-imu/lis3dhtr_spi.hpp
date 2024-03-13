@@ -116,80 +116,65 @@ public:
   };
 
   /**
-   * @brief Constructs and returns lis object
+   * @brief Constructs lis object
    *
    * @param p_spi - spi bus the lis is connected to
    * @param p_cs - The chip select to choose this chip to read and write to
    * @param p_gscale - The full scale setting for the imu, defaults to 2g
-   * @return lis3dhtr_spi object
-   * @throws std::errc::protocol_error - when ID register does not match
+   *
+   * @throws hal::no_such_device - when ID register does not match
    * the expected ID for the lis3dhtr_spi device.
    */
-  static result<lis3dhtr_spi> create(
-    hal::spi& p_spi,
-    hal::output_pin& p_cs,
-    max_acceleration p_gscale = max_acceleration::g2);
+  lis3dhtr_spi(spi& p_spi,
+               hal::output_pin& p_cs,
+               max_acceleration p_gscale = max_acceleration::g2);
 
   /**
    * @brief verify's that the device exists on the spi line
    *
-   * @return hal::status - success or errors from spi communication
-   */
-  [[nodiscard]] hal::status verify_device();
-
-  /**
-   * @brief Re-enables acceleration readings from the lis
-   *
-   * @return hal::status - success or errors from spi communication
-   * @throws std::errc::invalid_byte_sequence - when ID register does not match
+   * @throws hal::no_such_device - when ID register does not match
    * the expected ID for the lis3dhtr_spi device.
    */
-  [[nodiscard]] hal::status power_on();
+  void verify_device();
+
+  /**
+   * @brief enables acceleration readings from the lis
+   *
+   */
+  void power_on();
 
   /**
    * @brief Disables acceleration reading from the lis3dhtr_spi.
    *
-   * @return hal::status - success or errors from spi communication
    */
-  [[nodiscard]] hal::status power_off();
+  void power_off();
 
   /**
    * @brief Configures the frequency that new data can be read from the device
    *
    * @param p_data_rate - the frequency that new data can be read from the
    * device
-   * @return hal::status - success or errors from spi communication
    */
-  [[nodiscard]] hal::status configure_data_rates(data_rate_config p_data_rate);
+  void configure_data_rates(data_rate_config p_data_rate);
 
   /**
    * @brief Changes the gravity scale that the lis is reading. The larger the
    * scale, the less precise the reading.
    *
    * @param p_gravity_code - Scales in powers of 2 up to 16.
-   * @return hal::status - success or errors from spi communication
    */
-  [[nodiscard]] hal::status configure_full_scale(
-    max_acceleration p_gravity_code);
+  void configure_full_scale(max_acceleration p_gravity_code);
 
 private:
-  /**
-   * @brief lis3dhtr_spi Constructor
-   *
-   * @param p_spi - spi peripheral used to commnicate with device.
-   * @param p_address - lis3dhtr_spi device address.
-   */
-  lis3dhtr_spi(spi& p_spi, hal::output_pin& p_cs, max_acceleration p_gscale);
-
-  hal::result<accelerometer::read_t> driver_read();
+  accelerometer::read_t driver_read();
 
   /**
    * @brief Changes what spi wire mode that the device will use to transfer data
+   * 3 wire mode is not yet supported which is why this is locked to 4 wire mode
    *
    * @param p_spi_mode - The spi mode that the device will use
-   * @return hal::status - success or errors from spi communication
    */
-  [[nodiscard]] hal::status configure_spi_mode(spi_mode p_spi_mode);
+  void configure_spi_mode(spi_mode p_spi_mode);
 
   /**
    * @brief The spi peripheral used for communication with the device.

@@ -20,7 +20,7 @@
 
 #include "../hardware_map.hpp"
 
-hal::status application(hal::stm_imu::hardware_map& p_map)
+void application(hardware_map_t& p_map)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
@@ -33,16 +33,14 @@ hal::status application(hal::stm_imu::hardware_map& p_map)
   hal::print(console, "Starting lis3dhtr_spi Application...\n");
   hal::delay(clock, 50ms);
 
-  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr_spi::create(spi, cs));
+  hal::stm_imu::lis3dhtr_spi lis(spi, cs);
   while (true) {
     hal::delay(clock, 500ms);
-    auto acceleration = HAL_CHECK(lis.read());
+    auto acceleration = lis.read();
     hal::print<128>(console,
                     "Scale: 2g \t x = %fg, y = %fg, z = %fg \n",
                     acceleration.x,
                     acceleration.y,
                     acceleration.z);
   }
-
-  return hal::success();
 }

@@ -18,7 +18,7 @@
 
 #include "../hardware_map.hpp"
 
-hal::status application(hal::stm_imu::hardware_map& p_map)
+void application(hardware_map_t& p_map)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
@@ -30,17 +30,15 @@ hal::status application(hal::stm_imu::hardware_map& p_map)
   hal::print(console, "Starting lis3dhtr_i2c Application...\n");
   hal::delay(clock, 50ms);
 
-  auto lis = HAL_CHECK(hal::stm_imu::lis3dhtr_i2c::create(i2c));
+  hal::stm_imu::lis3dhtr_i2c lis(i2c);
 
   while (true) {
     hal::delay(clock, 500ms);
-    auto acceleration = HAL_CHECK(lis.read());
+    auto acceleration = lis.read();
     hal::print<128>(console,
                     "Scale: 2g \t x = %fg, y = %fg, z = %fg \n",
                     acceleration.x,
                     acceleration.y,
                     acceleration.z);
   }
-
-  return hal::success();
 }
