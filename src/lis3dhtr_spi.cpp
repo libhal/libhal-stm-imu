@@ -15,6 +15,7 @@
 #include "../include/libhal-stm-imu/lis3dhtr_spi.hpp"
 #include "lis3dhtr_constants.hpp"
 #include <libhal-util/steady_clock.hpp>
+#include <libhal/error.hpp>
 #include <libhal/serial.hpp>
 
 namespace hal::stm_imu {
@@ -22,19 +23,21 @@ using namespace std::chrono_literals;
 using namespace hal::literals;
 
 // public
-result<lis3dhtr_spi> lis3dhtr_spi::create(hal::spi& p_spi,
-                                          hal::output_pin& p_cs,
-                                          max_acceleration p_gscale)
+
+lis3dhtr_spi::lis3dhtr_spi(hal::spi& p_spi,
+                           hal::output_pin& p_cs,
+                           max_acceleration p_gscale)
+  : m_spi(&p_spi)
+  , m_cs(&p_cs)
+  , m_gscale(static_cast<hal::byte>(p_gscale))
 {
-  lis3dhtr_spi lis(p_spi, p_cs, p_gscale);
-  HAL_CHECK(lis.configure_spi_mode(spi_mode::four_wire));
-  HAL_CHECK(lis.verify_device());
-  HAL_CHECK(lis.power_on());
-  HAL_CHECK(lis.configure_full_scale(p_gscale));
-  return lis;
+  configure_spi_mode(spi_mode::four_wire);
+  verify_device();
+  power_on();
+  configure_full_scale(p_gscale);
 }
 
-hal::status lis3dhtr_spi::verify_device()
+void lis3dhtr_spi::verify_device()
 {
   // the expected value as read from the data sheet is 0x33
   constexpr auto expected = 0x33;
@@ -45,31 +48,27 @@ hal::status lis3dhtr_spi::verify_device()
                               .set<spi_read_bit_mask>()
                               .to<hal::byte>();
 
-  HAL_CHECK(m_cs->level(false));
-  auto who_am_i = HAL_CHECK(
-    hal::write_then_read<1>(*m_spi, std::array{ read_from_who_am_i }));
-  HAL_CHECK(m_cs->level(true));
-  // TODO(#<5>): This error needs to be more specific
+  m_cs->level(false);
+  auto who_am_i =
+    hal::write_then_read<1>(*m_spi, std::array{ read_from_who_am_i });
+  m_cs->level(true);
+
   if (who_am_i[0] != expected) {
-    return hal::new_error();
+    hal::safe_throw(hal::no_such_device(expected, this));
   }
-
-  return hal::success();
 }
 
-hal::status lis3dhtr_spi::power_on()
+void lis3dhtr_spi::power_on()
 {
-  HAL_CHECK(configure_data_rates(data_rate_config::mode_7));
-  return hal::success();
+  configure_data_rates(data_rate_config::mode_7);
 }
 
-hal::status lis3dhtr_spi::power_off()
+void lis3dhtr_spi::power_off()
 {
-  HAL_CHECK(configure_data_rates(data_rate_config::mode_0));
-  return hal::success();
+  configure_data_rates(data_rate_config::mode_0);
 }
 
-hal::status lis3dhtr_spi::configure_data_rates(data_rate_config p_data_rate)
+void lis3dhtr_spi::configure_data_rates(data_rate_config p_data_rate)
 {
   constexpr auto configure_reg_bit_mask = hal::bit_mask::from<7, 4>();
   constexpr auto addr_bit_mask = hal::bit_mask::from<5, 0>();
@@ -83,23 +82,21 @@ hal::status lis3dhtr_spi::configure_data_rates(data_rate_config p_data_rate)
                               .set<spi_addr_inc_bit_mask>()
                               .to<hal::byte>();
 
-  HAL_CHECK(m_cs->level(false));
-  auto ctrl_reg1_data = HAL_CHECK(
-    hal::write_then_read<1>(*m_spi, std::array{ read_from_ctrl_reg1 }));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
+  auto ctrl_reg1_data =
+    hal::write_then_read<1>(*m_spi, std::array{ read_from_ctrl_reg1 });
+  m_cs->level(true);
 
   hal::bit_modify(ctrl_reg1_data[0])
     .insert<configure_reg_bit_mask>(static_cast<hal::byte>(p_data_rate));
 
-  HAL_CHECK(m_cs->level(false));
-  HAL_CHECK(
-    hal::write(*m_spi, std::array{ write_to_ctrl_reg1, ctrl_reg1_data[0] }));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
 
-  return hal::success();
+  hal::write(*m_spi, std::array{ write_to_ctrl_reg1, ctrl_reg1_data[0] });
+  m_cs->level(true);
 }
 
-hal::status lis3dhtr_spi::configure_full_scale(max_acceleration p_gravity_code)
+void lis3dhtr_spi::configure_full_scale(max_acceleration p_gravity_code)
 {
   m_gscale = static_cast<hal::byte>(p_gravity_code);
 
@@ -117,34 +114,22 @@ hal::status lis3dhtr_spi::configure_full_scale(max_acceleration p_gravity_code)
 
   auto ctrl_reg4_array = std::array{ read_from_ctrl_reg4 };
 
-  HAL_CHECK(m_cs->level(false));
-  auto ctrl_reg4_data =
-    HAL_CHECK(hal::write_then_read<1>(*m_spi, ctrl_reg4_array));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
+  auto ctrl_reg4_data = hal::write_then_read<1>(*m_spi, ctrl_reg4_array);
+  m_cs->level(true);
 
   hal::bit_modify(ctrl_reg4_data[0])
     .insert<configure_reg_bit_mask>(static_cast<hal::byte>(p_gravity_code));
 
-  HAL_CHECK(m_cs->level(false));
-  HAL_CHECK(
-    hal::write(*m_spi, std::array{ write_to_ctrl_reg4, ctrl_reg4_data[0] }));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
 
-  return hal::success();
+  hal::write(*m_spi, std::array{ write_to_ctrl_reg4, ctrl_reg4_data[0] });
+  m_cs->level(true);
 }
 
 // private
 
-lis3dhtr_spi::lis3dhtr_spi(hal::spi& p_spi,
-                           hal::output_pin& p_cs,
-                           max_acceleration p_gscale)
-  : m_spi(&p_spi)
-  , m_cs(&p_cs)
-  , m_gscale(static_cast<hal::byte>(p_gscale))
-{
-}
-
-hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
+accelerometer::read_t lis3dhtr_spi::driver_read()
 {
   accelerometer::read_t acceleration;
   constexpr auto number_of_axis = 3;
@@ -157,11 +142,10 @@ hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
                                   .set<spi_addr_inc_bit_mask>()
                                   .to<hal::byte>();
 
-  HAL_CHECK(m_cs->level(false));
-  auto xyz_acceleration =
-    HAL_CHECK(hal::write_then_read<number_of_axis * bytes_per_axis>(
-      *m_spi, std::array{ read_from_xyz_register }));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
+  auto xyz_acceleration = hal::write_then_read<number_of_axis * bytes_per_axis>(
+    *m_spi, std::array{ read_from_xyz_register });
+  m_cs->level(true);
 
   /* parsing data from accelerometer
    all data is left justified which means the data will always have the lowest
@@ -213,7 +197,7 @@ hal::result<accelerometer::read_t> lis3dhtr_spi::driver_read()
   return acceleration;
 }
 
-hal::status lis3dhtr_spi::configure_spi_mode(spi_mode p_spi_mode)
+void lis3dhtr_spi::configure_spi_mode(spi_mode p_spi_mode)
 {
 
   constexpr auto configure_reg_bit_mask = hal::bit_mask::from<0>();
@@ -230,18 +214,17 @@ hal::status lis3dhtr_spi::configure_spi_mode(spi_mode p_spi_mode)
 
   auto ctrl_reg4_array = std::array{ read_from_ctrl_reg4 };
 
-  HAL_CHECK(m_cs->level(false));
-  auto ctrl_reg4_data =
-    HAL_CHECK(hal::write_then_read<1>(*m_spi, ctrl_reg4_array));
-  HAL_CHECK(m_cs->level(true));
+  m_cs->level(false);
+  auto ctrl_reg4_data = hal::write_then_read<1>(*m_spi, ctrl_reg4_array);
+  m_cs->level(true);
+
   hal::bit_modify(ctrl_reg4_data[0])
     .insert<configure_reg_bit_mask>(static_cast<hal::byte>(p_spi_mode));
-  HAL_CHECK(m_cs->level(false));
-  HAL_CHECK(
-    hal::write(*m_spi, std::array{ write_to_ctrl_reg4, ctrl_reg4_data[0] }));
-  HAL_CHECK(m_cs->level(true));
 
-  return hal::success();
+  m_cs->level(false);
+
+  hal::write(*m_spi, std::array{ write_to_ctrl_reg4, ctrl_reg4_data[0] });
+  m_cs->level(true);
 }
 
 }  // namespace hal::stm_imu

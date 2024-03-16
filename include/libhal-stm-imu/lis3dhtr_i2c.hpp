@@ -106,75 +106,58 @@ public:
   };
 
   /**
-   * @brief Constructs and returns lis object
+   * @brief Constructs lis object
    *
    * @param p_i2c - I2C bus the lis is connected to
    * @param p_device_address - address of the lis3dhtr_i2c, defaults to the low
    * address
    * @param p_gscale - The full scale setting for the imu, defaults to 2g
-   * @return lis3dhtr_i2c object
-   * @throws std::errc::invalid_byte_sequence - when ID register does not match
+   *
+   * @throws hal::no_such_device - when ID register does not match
    * the expected ID for the lis3dhtr_i2c device.
    */
-  static result<lis3dhtr_i2c> create(
-    hal::i2c& p_i2c,
-    hal::byte p_device_address = low_address,
-    max_acceleration p_gscale = max_acceleration::g2);
+
+  lis3dhtr_i2c(i2c& p_i2c,
+               hal::byte p_device_address = low_address,
+               max_acceleration p_gscale = max_acceleration::g2);
 
   /**
    * @brief verify's that the device exists on the I2C line
    *
-   * @return hal::status - success or errors from i2c communication
+   * @throws hal::no_such_device - when ID register does not match
    */
-  [[nodiscard]] hal::status verify_device();
+  void verify_device();
 
   /**
-   * @brief Re-enables acceleration readings from the lis
+   * @brief enables acceleration readings from the lis
    *
-   * @return hal::status - success or errors from i2c communication
-   * @throws std::errc::invalid_byte_sequence - when ID register does not match
-   * the expected ID for the lis3dhtr_i2c device.
    */
-  [[nodiscard]] hal::status power_on();
+  void power_on();
 
   /**
    * @brief Disables acceleration reading from the lis3dhtr_i2c.
    *
-   * @return hal::status - success or errors from i2c communication
    */
-  [[nodiscard]] hal::status power_off();
+  void power_off();
 
   /**
    * @brief Configures the frequency that new data can be read from the device
    *
    * @param p_data_rate - the frequency that new data can be read from the
    * device
-   * @return hal::status - success or errors from i2c communication
    */
-  [[nodiscard]] hal::status configure_data_rates(data_rate_config p_data_rate);
+  void configure_data_rates(data_rate_config p_data_rate);
 
   /**
    * @brief Changes the gravity scale that the lis is reading. The larger the
    * scale, the less precise the reading.
    *
    * @param p_gravity_code - Scales in powers of 2 up to 16.
-   * @return hal::status - success or errors from i2c communication
    */
-  [[nodiscard]] hal::status configure_full_scale(
-    max_acceleration p_gravity_code);
+  void configure_full_scale(max_acceleration p_gravity_code);
 
 private:
-  /**
-   * @brief lis3dhtr_i2c Constructor
-   *
-   * @param p_i2c - i2c peripheral used to commnicate with device.
-   * @param p_address - lis3dhtr_i2c device address.
-   */
-  lis3dhtr_i2c(i2c& p_i2c,
-               hal::byte p_device_address,
-               max_acceleration p_gscale);
-
-  hal::result<accelerometer::read_t> driver_read() override;
+  accelerometer::read_t driver_read() override;
 
   /// The I2C peripheral used for communication with the device.
   hal::i2c* m_i2c;
